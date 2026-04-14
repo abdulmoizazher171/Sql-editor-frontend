@@ -1,5 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Play, Database, Save, ChevronDown, Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import plants from  './../../assets/list.json'
+import Select from "react-select";
 
 interface NavbarProps {
   onExecute: (arr: string[] ,  committed: boolean) => void;
@@ -27,10 +31,20 @@ export default function Navbar({
     "h-9 flex items-center justify-center gap-2 px-3 rounded-md text-sm font-medium transition-all border whitespace-nowrap";
 
   // When clicking "Execute" in React
+const plantOptions = plants.map(p => ({
+  value: p,
+  label: p
+}));
+
+
+
+
 
   const [selectedPlants, setSelectedPlants] = useState<string[]>([]);
 
-  const plants = ["GEL", "MWPL", "TGL", "Foundation"]; // Your plant list
+const handleDropDownChange = (selected:any) => {
+  setSelectedPlants(selected);
+};
 
   const togglePlant = (plant: string) => {
     setSelectedPlants((prev) =>
@@ -47,66 +61,64 @@ export default function Navbar({
   const clickHandle =()=> {
     // console.log({selectedPlants})
     onExecute(selectedPlants , committed);
+   
   }
 
 
   return (
-    <nav className="h-full w-full flex items-center justify-between px-4 bg-[#181818] border-b border-gray-800 text-gray-200 overflow-hidden">
-      {/* LEFT: Logo Section (Fixed width, won't shrink) */}
+    <nav className="h-full w-full flex items-center justify-between px-4 bg-white border-b border-slate-200 text-slate-900  shadow-sm">
+      {/* LEFT: Logo Section */}
       <div className="flex items-center gap-3 flex-none">
-        <div className="p-1.5 bg-blue-600/10 rounded-lg">
-          <Database className="text-blue-500" size={18} />
+        <div className="p-1.5 bg-steel-100/50 rounded-lg border border-steel-300/50">
+          <Database className="text-steel-600" size={18} />
         </div>
-        <h1 className="font-bold text-sm tracking-tight hidden md:block">
+        <h1 className="font-bold text-base tracking-tight hidden md:block bg-gradient-to-r from-steel-600 to-amber-600 bg-clip-text text-transparent">
           AlgoAPM Studio
         </h1>
       </div>
 
-      {/* MIDDLE: Search/Quick Open (Optional but fills space professionally) */}
+      {/* MIDDLE: Search/Quick Open */}
       <div className="flex-1 max-w-md mx-8 hidden lg:block">
         <div className="relative group">
           <Search
             size={14}
-            className="absolute left-3 top-2.5 text-gray-500 group-focus-within:text-blue-400"
+            className="absolute left-3 top-2.5 text-slate-400 group-focus-within:text-steel-600 transition-colors"
           />
           <input
             type="text"
             placeholder="Quick search procedures (Ctrl + P)"
-            className="w-full bg-[#252525] border border-gray-700 rounded-md py-1.5 pl-9 pr-4 text-xs outline-none focus:border-gray-500 transition-all"
+            className="input-primary w-full py-1.5 pl-9 pr-4 text-xs"
           />
         </div>
       </div>
 
-      {/* RIGHT: Action Toolbar (Forced to stay in one row) */}
+      {/* RIGHT: Action Toolbar */}
       <div className="flex items-center gap-2 flex-nowrap flex-none">
         {/* Server Selector */}
-        <div className="flex flex-wrap gap-4 p-2 bg-[#181818] border-b border-gray-800">
-          <span className="text-xs text-gray-500 self-center">
+        <div className="flex flex-wrap gap-4 p-2 bg-slate-100/50 border-b border-slate-200 rounded-lg">
+          <span className="text-xs text-slate-600 self-center font-medium">
             Target Plants:
           </span>
-          {plants.map((plant) => (
-            <label
-              key={plant}
-              className="flex items-center gap-2 cursor-pointer group"
-            >
-              <input
-                type="checkbox"
-                checked={selectedPlants.includes(plant)}
-                onChange={() => togglePlant(plant)}
-                className="w-4 h-4 rounded border-gray-700 bg-gray-900 text-blue-600 focus:ring-0"
-              />
-              <span
-                className={`text-xs ${selectedPlants.includes(plant) ? "text-blue-400" : "text-gray-500"} group-hover:text-gray-300`}
-              >
-                {plant}
-              </span>
-            </label>
-          ))}
+           <div className="w-72">
+            <Select options={plantOptions} isMulti value={selectedPlants} onChange={handleDropDownChange} placeholder="Select Plants..." />
+     {/* <Select
+  options={plantOptions}
+  isMulti
+styles={{
+    menu: (base) => ({
+      ...base,
+      zIndex: 999999999999,
+      overflow: 'visible',
+    })
+  }}
+  
+/> */}
+    </div>
         </div>
 
         {/* Save Button */}
         <button
-          className={`${actionItemClass} bg-white border-gray-700 hover:bg-[#323232] text-gray-300 flex-none`}
+          className="btn-secondary h-9 flex items-center justify-center gap-2 px-3 text-sm flex-none"
           onClick={() => save()}
         >
           <Save size={16} />
@@ -114,15 +126,21 @@ export default function Navbar({
         </button>
 
         {/* Divider */}
-        <div className="w-[1px] h-5 bg-gray-700 mx-1 flex-none" />
+        <div className="w-[1px] h-5 bg-slate-300 mx-1 flex-none" />
 
         {/* Execute Button */}
         <button
           onClick={clickHandle}
           disabled={isExecuting}
-          className={`${actionItemClass} bg-blue-600 border-blue-500 hover:bg-blue-400 text-white shadow-lg active:scale-95 flex-none`}
+          className={`btn-primary h-9 flex items-center justify-center gap-2 px-4 text-sm flex-none ${
+            isExecuting ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
-          <Play size={14} fill="currentColor" />
+          {isExecuting ? (
+            <div className="w-4 h-4 border-2 border-slate-300 border-t-steel-600 rounded-full animate-spin" />
+          ) : (
+            <Play size={14} fill="currentColor" />
+          )}
           <span>Execute</span>
         </button>
       </div>

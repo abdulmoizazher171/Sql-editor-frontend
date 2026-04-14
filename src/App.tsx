@@ -1,4 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useRef, useState } from "react";
+
 import { ProcedureSidebar } from "./Components/Sidebar/Sidebar";
 import { SqlEditor } from "./Components/Editor/SqlEditor";
 import Navbar from "./Components/Layout/Navbar";
@@ -8,11 +11,10 @@ import {
   handleGitCommit,
   handlemultipleexecute,
 } from "./Hooks/hooks";
-import { ResultTable } from "./Components/Editor/ResutlTable";
+import { TabbedResultTable } from "./Components/Editor/TabbedResultTable";
 
 export default function App() {
-  const [currentCode, setCurrentCode] = useState(
-    "-- Select a procedure to edit or start typing...",
+  const [currentCode, setCurrentCode] = useState("",
   );
   const [procedure, setProcedure] = useState<Procedure>({
     content: "",
@@ -32,46 +34,34 @@ export default function App() {
   const [selectedSite, setSelectedSite] = useState("MWPL");
   const [querySuccess, setQuerySuccess] = useState(true);
   const [committed, setCommitted] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<any>();
 
-  const handleExecuteQuery = async (arr: string[] , committed: boolean) => {
-    console.log({ arr });
-    setIsExecuting(true);
-    try {
-      const codeToRun = codeRef.current;
-      if (arr.length == 1) {
-        const response = await handleExecute(codeToRun, arr[0], committed);
-        console.log(response);
-        setQueryResult(response);
-        setQuerySuccess(true);
-      } else {
-        const response = await handlemultipleexecute(codeToRun, arr);
-        console.log(response);
-        for (const site in response) {
-          console.log(`Results for ${site}:`, response[site]);
-        }
-        setQueryResult([]);
-        setQuerySuccess(true);
-      }
+const handleExecuteQuery = async (arr: any, committed: boolean) => {
+  setIsExecuting(true);
 
-      // console.log(response);
-      // if (response) {
-      //   setQueryResult(response);
-      //   setQuerySuccess(true);
-      // } else {
-      //   setQuerySuccess(false);
-      //   alert("SQL Error: " + response.error);
+  try {
+    const codeToRun = codeRef.current;
 
-      // }
-    } catch (error) {
-      console.error("Execution failed", error);
-      setQuerySuccess(false);
-      setError(error instanceof Error ? error.message : "Unknown error");
-      alert("Execution failed: " + (error instanceof Error ? error.message : "Unknown error"));
-    } finally {
-      setIsExecuting(false);
-    }
-  };
+    const responses = await Promise.all(
+      arr.map((item: any) =>
+        handleExecute(codeToRun, item.value, committed)
+      )
+    );
+
+    console.log(responses);
+    setQueryResult(responses);
+    setQuerySuccess(true);
+
+  } catch (error) {
+    console.error("Execution failed", error);
+    setQuerySuccess(false);
+    setError(error)
+    console.error("Error executing query:", error);
+    console.error("Error executing query:", error);
+  } finally {
+    setIsExecuting(false);
+  }
+};
 
   const loadProcedure = async (name: string) => {
     try {
@@ -105,8 +95,7 @@ export default function App() {
   };
 
   return (
-    // h-screen + overflow-hidden prevents the whole page from scrolling
-    <div className="flex flex-col h-screen w-screen bg-[#0f0f0f] text-gray-200 overflow-hidden">
+    <div className="flex flex-col h-screen w-screen bg-white text-slate-900 overflow-hidden">
       {/* 1. Top Navigation (Fixed Height) */}
       <div className="h-14 w-full flex-none">
         <Navbar
@@ -116,71 +105,64 @@ export default function App() {
           setSelectedSite={setSelectedSite}
           save={commithandler}
           committed={committed}
-          // filename={filename}
-          // codeRef={codeRef}
         />
       </div>
 
       {/* 2. Main Workspace (Flexible Height) */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Sidebar (Fixed Width) */}
-        <aside className="w-64 flex-none border-r border-gray-800 bg-[#181818]">
+        <aside className="w-64 flex-none border-r border-slate-200 bg-slate-50 shadow-sm">
           <ProcedureSidebar onSelect={loadProcedure} />
         </aside>
 
         {/* Editor & Console Area (Flexible Width) */}
-        <main className="flex-1 flex flex-col min-w-0 bg-[#1e1e1e]">
+        <main className="flex-1 flex flex-col min-w-0 bg-slate-100">
           {/* Editor Container (Grows to fill space) */}
-          <div className="h-1/2 relative overflow-hidden">
+          <div className="h-1/2 relative overflow-hidden border-b border-slate-200">
             <SqlEditor
               code={currentCode}
               onChange={(val) => {
-                codeRef.current = val || ""; // Update the ref (zero re-renders!)
+                codeRef.current = val || "";
               }}
             />
           </div>
-          <div className="h-1/2 flex flex-col bg-[#0f0f0f]">
-            
-
+          <div className="h-1/2 flex flex-col bg-white">
             {/* This wrapper ensures the table fills the 50% height and scrolls */}
             <div className="flex-1 relative overflow-hidden">
-              {selectedSite.length > 1 ? (
-                <div className="p-4 text-gray-500">
-                  Multiple sites selected. Please check the console for
-                  individual results.
-                </div>
-              ) : (
-                <ResultTable data={queryResult} success={querySuccess} error={error} />
-              )}
-              <ResultTable data={queryResult} success={querySuccess} error={error} />
+              <TabbedResultTable
+                results={queryResult}
+                success={querySuccess}
+                error={error}
+                isExecuting={isExecuting}
+              />
             </div>
           </div>
 
-          {/* 3. Bottom Console (Fixed Height, can be made resizable later) */}
-          <div className="h-40 flex-none border-t border-gray-800 bg-[#121212] flex flex-col">
-            <div className="flex items-center px-4 py-1.5 bg-[#181818] border-b border-gray-800 text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+          {/* 3. Bottom Console (Fixed Height) */}
+          <div className="h-40 flex-none border-t border-slate-200 bg-slate-50 flex flex-col shadow-inner">
+            <div className="flex items-center px-4 py-1.5 bg-white border-b border-slate-200 text-xs uppercase tracking-widest text-slate-600 font-bold">
               Output / Execution Logs
             </div>
-            <div className="flex-1 p-4 font-mono text-[12px] overflow-y-auto custom-scrollbar">
+            <div className="flex-1 p-4 font-mono text-xs overflow-y-auto custom-scrollbar">
               <div className="flex gap-3 mb-1">
-                <span className="text-gray-600">[10:45:01]</span>
-                <span className="text-blue-400 font-bold">INFO:</span>
-                <span>Editor initialized. Ready for AlgoAPM queries.</span>
+                <span className="text-slate-500">[10:45:01]</span>
+                <span className="text-steel-600 font-bold">INFO:</span>
+                <span className="text-slate-700">Editor initialized. Ready for AlgoAPM queries.</span>
               </div>
               <div className="flex gap-3">
-                <span className="text-gray-600">[10:45:05]</span>
-                <span className="text-green-500 font-bold">SUCCESS:</span>
-                <span>Connection established to MWPL (192.168.1.10)</span>
+                <span className="text-slate-500">[10:45:05]</span>
+                <span className="text-green-600 font-bold">SUCCESS:</span>
+                <span className="text-slate-700">Connection established to MWPL (192.168.1.10)</span>
               </div>
             </div>
           </div>
         </main>
       </div>
 
-      {/* 4. Thin Status Bar (Optional Pro Detail) */}
-      <footer className="h-6 flex-none bg-blue-600 flex items-center px-3 justify-between text-[11px] text-white">
-        <div className="flex gap-4">
-          <span>Ready</span>
+      {/* 4. Status Bar */}
+      <footer className="h-6 flex-none bg-steel-600 border-t border-slate-200 flex items-center px-3 justify-between text-xs text-white shadow-md">
+        <div className="flex gap-6">
+          <span className="text-green-300 font-medium">● Ready</span>
           <span>Ln 1, Col 1</span>
         </div>
         <div className="font-mono">UTF-8</div>

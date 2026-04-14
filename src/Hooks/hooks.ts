@@ -1,9 +1,46 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 
 
 const BASEURL = import.meta.env.VITE_API_URL;
 console.log("All Env Variables:", import.meta.env);
  
+
+const validateQuery = (query:any) => {
+  const normalizedQuery = query.toLowerCase().trim();
+
+  // ❌ Skip validation if it's a procedure/function definition
+  if (
+    normalizedQuery.includes('create procedure') ||
+    normalizedQuery.includes('alter procedure') ||
+    normalizedQuery.includes('create proc') ||
+    normalizedQuery.includes('alter proc') ||
+    normalizedQuery.includes('create function') ||
+    normalizedQuery.includes('alter function')
+  ) {
+    return { success: true };
+  }
+
+  // ✅ Check if it's a SELECT query without TOP
+  const isSelect = /^\s*select\b/.test(normalizedQuery);
+  const hasTop = /\bselect\s+top\s+\d+/i.test(query);
+
+  if (isSelect && !hasTop) {
+    alert("⚠️ Please use TOP in SELECT queries to limit results (e.g., SELECT TOP 100 ...)");
+    return { success: false, error: "Missing TOP in SELECT query" };
+  }
+
+  // ⚠️ Optional: wildcard warning
+  if (normalizedQuery.includes('*')) {
+    alert("⚠️ Warning: Using '*' may impact performance. Consider selecting specific columns.");
+  }
+
+  return { success: true };
+};
+
+
+
 const fetchScripts = async () => {
   try {
     console.log("All Env Variables:", import.meta.env);
@@ -35,16 +72,16 @@ const handleExecute = async (query: string, site: string , committed: boolean): 
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query: query,
-      site: site, // e.g., "MWPL" or "GEL"
+      site: site, 
     }),
   });
-  if (query.includes('*'))
-  {
-    alert("⚠️ Warning: Your query contains a wildcard (*). This may lead to long execution times or large result sets. Please ensure this is intentional.");
-    return { success: false, error: "Query contains wildcard (*)" };
-  }
-
-  if (query.includes('procedure') || query.includes('function') || query.includes('view') || query.includes('Procedure') || query.includes('Function') || query.includes('View'))
+ 
+//  const out= validateQuery(query.toLowerCase());
+//  if(out.success === false) {
+//       return { success: false, error: "Query contains potentially harmful keywords" };
+//  }
+ 
+  if (query.toLowerCase().includes('procedure') || query.toLowerCase().includes('function') || query.toLowerCase().includes('proc') ) 
   {
     if (!committed) {
       alert("⚠️ Warning: Your query contains keywords that may modify database objects. Please commit this before execution.");
@@ -59,8 +96,8 @@ const handleExecute = async (query: string, site: string , committed: boolean): 
     // Pass result.data (the array) to your state
     return result.data;
   } else {
-    alert("❌ Error: " + result.error);
-    return { success: false, error: result.error };
+    
+    return { success: false, error: result.error,plant:result.plant };
   }
 };
 
@@ -83,7 +120,7 @@ const handleGitCommit = async (filename: string, codeRef: React.RefObject<string
 }
 
     catch (error: any) {
-    alert(error.message);
+    return
   }
 
   
@@ -105,15 +142,15 @@ const handleGitCommit = async (filename: string, codeRef: React.RefObject<string
 
     const result = await response.json();
     if (result.success) {
-      alert("✅ " + result.message);
+  
      // Mark as committed after successful commit
-    } else {
-      alert("❌ Git Error: " + result.error);
-    }
+    } 
   } catch (error) {
-    alert("System Error: Could not connect to Git service.");
+    console.log("Git commit failed:", error);
   }
 };
+
+
 
 
 const handlemultipleexecute = async (query: string, sites: string[]): Promise<any> => {

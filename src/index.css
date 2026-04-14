@@ -1,99 +1,143 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
+@import "tailwindcss";
 
 
+/* Professional Light Theme */
+:root {
+  /* Light color palette */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8f9fa;
+  --color-bg-tertiary: #f1f5f9;
+  
+  --color-surface-primary: #f0f4f8;
+  --color-surface-secondary: #e9ecf1;
+  --color-surface-tertiary: #dde5ed;
+  
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #374151;
+  --color-text-tertiary: #6b7280;
+  --color-text-quaternary: #9ca3af;
+  
+  --color-border-primary: #d1d5db;
+  --color-border-secondary: #e5e7eb;
+  
+  --color-primary: #3a7e92;
+  --color-primary-light: #6297aa;
+  --color-primary-dark: #2e6478;
+  
+  --color-accent: #f59e0b;
+  --color-accent-dark: #d97706;
+  
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #06b6d4;
+}
 
+/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #1e1e1e;
+  background: var(--color-bg-tertiary);
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #333;
+  background: var(--color-border-primary);
   border-radius: 4px;
 }
 
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+* {
+  box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
-  background-color: #0f0f0f;
+  background: linear-gradient(180deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
+  color: var(--color-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.3px;
+  background-color: var(--color-bg-primary);
 }
 
-/* Custom Scrollbar for Sidebar and Console */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Component utilities */
+@layer components {
+  
+
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-primary) var(--color-bg-secondary);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--color-bg-secondary);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-border-primary);
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--color-surface-secondary);
+  }
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 10px;
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #444;
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Ensure Monaco container takes full space */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.animate-slide-in {
+  animation: slideInDown 0.3s ease-out;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Utility classes */
+.text-xs { font-size: 0.75rem; line-height: 1rem; }
+.text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+.font-mono { font-family: ui-monospace, 'Jetbrains Mono', 'Courier New', monospace; }
+.shadow-inner { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); }
+
+/* Monaco editor styling */
 .monaco-editor-container {
   height: 100% !important;
   width: 100% !important;
